@@ -10,7 +10,7 @@ pipeline {
         }
         stage('Build Docker Image') {
             when {
-                branch 'master'
+                branch 'ooga'
             }
             steps {
                 script {
@@ -23,7 +23,7 @@ pipeline {
         }
         stage('Push Docker Image') {
             when {
-                branch 'master'
+                branch 'ooga'
             }
             steps {
                 script {
@@ -34,36 +34,43 @@ pipeline {
                 }
             }
         }
-        stage('DeployToProduction') {
+        stage('DeployToDev') {
             when {
-                branch 'master'
+                branch 'ooga'
             }
             steps {
-                input 'Deploy to Production?'
+                input 'Deploy to Dev?'
                 milestone(1)
                 script {
-                    sh "ssh -o StrictHostKeyChecking=no cloud_user@$DockerProd \"docker pull bossdock/train-schedule:${env.BUILD_NUMBER}\""
+                    sh "ssh -o StrictHostKeyChecking=no cloud_user@$DockerDev \"docker pull bossdock/train-schedule:${env.BUILD_NUMBER}\""
                     try {
-                        sh "ssh -o StrictHostKeyChecking=no cloud_user@$prod_ip \"docker stop train-schedule\""
-                        sh "ssh -o StrictHostKeyChecking=no cloud_user@$prod_ip \"docker rm train-schedule\""
+                        sh "ssh -o StrictHostKeyChecking=no cloud_user@$DockerDev \"docker stop train-schedule\""
+                        sh "ssh -o StrictHostKeyChecking=no cloud_user@$DockerDev \"docker rm train-schedule\""
                     } catch (err) {
                         echo: 'caught error: $err'
                     }
-                    sh "ssh -o StrictHostKeyChecking=no cloud_user@$prod_ip \"docker run --restart always --name train-schedule -p 8080:8080 -d bossdock/train-schedule:${env.BUILD_NUMBER}\""
+                    sh "ssh -o StrictHostKeyChecking=no cloud_user@$DockerDev \"docker run --restart always --name train-schedule -p 8080:8080 -d bossdock/train-schedule:${env.BUILD_NUMBER}\""
                 }
-                //withCredentials([usernamePassword(credentialsId: 'webserver_login', usernameVariable: 'USERNAME', passwordVariable: 'USERPASS')]) {
-                //    script {
-                //        sh "sshpass -p '$USERPASS' -v ssh -o StrictHostKeyChecking=no $USERNAME@$prod_ip \"docker pull bossdock/train-schedule:${env.BUILD_NUMBER}\""
-                //        try {
-                //            sh "sshpass -p '$USERPASS' -v ssh -o StrictHostKeyChecking=no $USERNAME@$prod_ip \"docker stop train-schedule\""
-                //            sh "sshpass -p '$USERPASS' -v ssh -o StrictHostKeyChecking=no $USERNAME@$prod_ip \"docker rm train-schedule\""
-                //        } catch (err) {
-                //            echo: 'caught error: $err'
-                //        }
-                //        sh "sshpass -p '$USERPASS' -v ssh -o StrictHostKeyChecking=no $USERNAME@$prod_ip \"docker run --restart always --name train-schedule -p 8080:8080 -d bossdock/train-schedule:${env.BUILD_NUMBER}\""
-                //    }
-                //}
             }
         }
+        //stage('DeployToProduction') {
+        //    when {
+        //        branch 'ooga'
+        //    }
+        //    steps {
+        //        input 'Deploy to Production?'
+        //        milestone(1)
+        //        script {
+        //            sh "ssh -o StrictHostKeyChecking=no cloud_user@$DockerProd \"docker pull bossdock/train-schedule:${env.BUILD_NUMBER}\""
+        //            try {
+        //                sh "ssh -o StrictHostKeyChecking=no cloud_user@$DockerProd \"docker stop train-schedule\""
+        //                sh "ssh -o StrictHostKeyChecking=no cloud_user@$DockerProd \"docker rm train-schedule\""
+        //            } catch (err) {
+        //                echo: 'caught error: $err'
+        //            }
+        //            sh "ssh -o StrictHostKeyChecking=no cloud_user@$DockerProd \"docker run --restart always --name train-schedule -p 8080:8080 -d bossdock/train-schedule:${env.BUILD_NUMBER}\""
+        //        }
+        //    }
+        //}
     }
 }
