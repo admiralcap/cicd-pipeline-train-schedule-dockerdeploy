@@ -10,7 +10,7 @@
 					"departure": "12:10pm"
 				},
 				{
-					"station": "Pine",
+					"station": "PoorQueuePine",
 					"status": "ON-TIME",
 					"arrival": "1:00pm",
 					"departure": "1:10pm"
