@@ -42,7 +42,7 @@ pipeline {
                 input 'Deploy to Production?'
                 milestone(1)
                 script {
-                    sh "ssh -o StrictHostKeyChecking=no cloud_user@$prod_ip \"docker pull bossdock/train-schedule:${env.BUILD_NUMBER}\""
+                    sh "ssh -o StrictHostKeyChecking=no cloud_user@$$DockerProd \"docker pull bossdock/train-schedule:${env.BUILD_NUMBER}\""
                     try {
                         sh "ssh -o StrictHostKeyChecking=no cloud_user@$prod_ip \"docker stop train-schedule\""
                         sh "ssh -o StrictHostKeyChecking=no cloud_user@$prod_ip \"docker rm train-schedule\""
